@@ -8,7 +8,7 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-brand">
-        <span className="logo">EW</span> Elliott Wave Solutions
+        <span className="logo">EW</span> Elliott Wave Dashboard
       </div>
       <ul className="nav-links">
         <li>
@@ -33,7 +33,7 @@ const Footer = () => {
     <footer className="footer">
       <div className="footer-content">
         <div className="footer-section">
-          <h3>Elliott Wave Solutions</h3>
+          <h3>Elliott Wave Dashboard </h3>
           <p>Global Leader in Financial Predictions</p>
         </div>
         <div className="footer-section">
@@ -84,7 +84,7 @@ const Home = () => {
   return (
     <div className="page-content">
       <header className="hero">
-        <h1 className="hero-title">Welcome to Elliott Wave Solutions</h1>
+        <h1 className="hero-title">Welcome to Elliott Wave Dashboard</h1>
         <p className="hero-subtitle">Latest Market News</p>
       </header>
       <div className="content-grid">
@@ -108,35 +108,22 @@ const Home = () => {
 };
 
 const Tickers = () => {
-  const [tickers, setTickers] = useState([]);
+  const [tickers] = useState([
+    // Foreign Stocks
+    { Ticker: 'AAPL', Company: 'Apple Inc.', Sector: 'Technology', 'Market Cap': '$2.8T', 'Current Price': '$170' },
+    { Ticker: 'MSFT', Company: 'Microsoft Corporation', Sector: 'Technology', 'Market Cap': '$2.6T', 'Current Price': '$310' },
+    { Ticker: 'GOOGL', Company: 'Alphabet Inc.', Sector: 'Technology', 'Market Cap': '$1.7T', 'Current Price': '$140' },
+    { Ticker: 'AMZN', Company: 'Amazon.com, Inc.', Sector: 'Consumer Discretionary', 'Market Cap': '$1.4T', 'Current Price': '$120' },
+    { Ticker: 'META', Company: 'Meta Platforms, Inc.', Sector: 'Communication Services', 'Market Cap': '$900B', 'Current Price': '$330' },
+    { Ticker: 'TSLA', Company: 'Tesla, Inc.', Sector: 'Consumer Discretionary', 'Market Cap': '$800B', 'Current Price': '$250' },
 
-  useEffect(() => {
-    const fetchTickers = async () => {
-      const topTickers = [
-        'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'META', 'TSLA', 'NFLX', 'INTC', 'CSCO',
-        'BRK.B', 'JPM', 'V', 'MA', 'WMT', 'PG', 'DIS', 'PEP', 'KO', 'XOM',
-        'TATAMOTORS.NS', 'RELIANCE.BO', 'HDFCBANK.BO', 'INFY.BO', 'TCS.BO',
-      ];
-      const tickerData = [];
-      for (const ticker of topTickers) {
-        try {
-          const response = await axios.get(`https://query1.finance.yahoo.com/v10/finance/quoteSummary/${ticker}?modules=price`);
-          const info = response.data.quoteSummary.result[0].price;
-          tickerData.push({
-            Ticker: ticker,
-            Company: info.longName || 'N/A',
-            Sector: info.sector || 'N/A',
-            'Market Cap': `$${info.marketCap?.fmt || 'N/A'}`,
-            'Current Price': `$${info.regularMarketPrice?.fmt || 'N/A'}`,
-          });
-        } catch (error) {
-          console.error(`Error fetching data for ${ticker}:`, error);
-        }
-      }
-      setTickers(tickerData);
-    };
-    fetchTickers();
-  }, []);
+    // Indian Stocks
+    { Ticker: 'TCS.NS', Company: 'Tata Consultancy Services', Sector: 'Technology', 'Market Cap': '₹14T', 'Current Price': '₹3700' },
+    { Ticker: 'RELIANCE.NS', Company: 'Reliance Industries', Sector: 'Energy', 'Market Cap': '₹19T', 'Current Price': '₹2900' },
+    { Ticker: 'HDFCBANK.NS', Company: 'HDFC Bank', Sector: 'Financial Services', 'Market Cap': '₹11T', 'Current Price': '₹1550' },
+    { Ticker: 'INFY.NS', Company: 'Infosys Limited', Sector: 'Technology', 'Market Cap': '₹6T', 'Current Price': '₹1400' },
+    { Ticker: 'ICICIBANK.NS', Company: 'ICICI Bank', Sector: 'Financial Services', 'Market Cap': '₹7T', 'Current Price': '₹1100' },
+  ]);
 
   return (
     <div className="page-content">
@@ -144,6 +131,7 @@ const Tickers = () => {
         <h1 className="page-title">Market Data</h1>
         <p className="page-subtitle">Comprehensive Stock Insights</p>
       </header>
+
       <div className="content-grid">
         <div className="card data-card">
           <table className="ticker-table">
@@ -173,6 +161,7 @@ const Tickers = () => {
     </div>
   );
 };
+
 
 const Prediction = () => {
   const [ticker, setTicker] = useState('');
