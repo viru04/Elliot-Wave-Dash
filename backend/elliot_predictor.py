@@ -5,6 +5,8 @@ import base64
 import warnings
 import yfinance as yf
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 # --- Suppress warnings ---
@@ -115,31 +117,31 @@ def plot_rsi_chart(data, ticker, start_date):
 
     return generate_base64_chart(fig)
 
-if __name__ == "__main__":
-    try:
-        ticker = sys.argv[1]
-        data = fetch_stock_data(ticker)
-        if data.empty:
-            raise ValueError(f"No data found for ticker {ticker}")
+def load_model():
+    class Model:
+        def predict(self, ticker):
+            try:
+                data = fetch_stock_data(ticker)
+                if data.empty:
+                    raise ValueError(f"No data found for ticker {ticker}")
 
-        data = calculate_rsi(data)
-        lowest_rsi_date = find_lowest_rsi(data)
-        waves = calculate_elliott_waves(data, lowest_rsi_date)
+                data = calculate_rsi(data)
+                lowest_rsi_date = find_lowest_rsi(data)
+                waves = calculate_elliott_waves(data, lowest_rsi_date)
 
-        price_chart_base64 = plot_price_chart(data, waves, lowest_rsi_date)
-        rsi_chart_base64 = plot_rsi_chart(data, ticker, lowest_rsi_date)
+                price_chart_base64 = plot_price_chart(data, waves, lowest_rsi_date)
+                rsi_chart_base64 = plot_rsi_chart(data, ticker, lowest_rsi_date)
 
-        wave5_start, wave5_end = waves["Wave 5"]
+                wave5_start, wave5_end = waves["Wave 5"]
 
-        result = {
-            "price_chart": f"data:image/png;base64,{price_chart_base64}",
-            "rsi_chart": f"data:image/png;base64,{rsi_chart_base64}",
-            "prediction": f"{wave5_start:.2f} to {wave5_end:.2f}"
-        }
+                result = {
+                    "price_chart": f"data:image/png;base64,{price_chart_base64}",
+                    "rsi_chart": f"data:image/png;base64,{rsi_chart_base64}",
+                    "prediction": f"{wave5_start:.2f} to {wave5_end:.2f}"
+                }
+                return result
 
-        print(json.dumps(result))
+            except Exception as e:
+                return {"error": str(e)}
 
-    except Exception as e:
-        error_output = { "error": str(e) }
-        print(json.dumps(error_output))
-        sys.exit(1)
+    return Model()
