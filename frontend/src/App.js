@@ -21,9 +21,6 @@ const Navbar = () => {
           <NavLink to="/prediction" activeClassName="active">Predictions</NavLink>
         </li>
       </ul>
-      <div className="nav-actions">
-        <button className="contact-btn">Contact Us</button>
-      </div>
     </nav>
   );
 };
