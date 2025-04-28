@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, NavLink } from 'react-router-dom';
 import Plot from 'react-plotly.js';
 import axios from 'axios';
+import {ScaleLoader} from 'react-spinners'
 import './App.css';
 
 const Navbar = () => {
@@ -62,15 +63,18 @@ const Footer = () => {
 
 const Home = () => {
   const [news, setNews] = useState([]);
-
+  const [loading,setLoading]=useState(false)
   useEffect(() => {
     const fetchNews = async () => {
       try {
+        setLoading(true)
         const response = await axios.get(
-          `https://newsapi.org/v2/top-headlines?category=business&language=en&apiKey=b0229a4f70084622acc940a120e73464`
+          `https://elliot-wave-dash-1.onrender.com/news`
         );
-        setNews(response.data.articles.slice(0, 5));
+        setNews(response.data.news);
+        setLoading(false)
       } catch (error) {
+        setLoading(false)
         console.error('Error fetching news:', error);
         setNews([{ title: 'Error', description: 'Failed to fetch news' }]);
       }
@@ -86,8 +90,14 @@ const Home = () => {
       </header>
       <div className="content-grid">
         <div className="card news-card">
-          
-          {news.map((article, index) => (
+          {loading && <div style={{display:'flex',alignItems:'center',justifyContent:'center'}}><ScaleLoader
+            color="red"
+            loading={true}
+            size={150}
+            aria-label="Loading Spinner"
+            data-testid="loader"
+          /></div>}
+          {!loading && news.map((article, index) => (
             <div key={index} className="news-item">
               <img src={article.urlToImage || 'https://via.placeholder.com/300x200'} alt={article.title} className="news-image" />
               <div>
@@ -159,7 +169,6 @@ const Tickers = () => {
   );
 };
 
-
 const Prediction = () => {
   const [ticker, setTicker] = useState('');
   const [prediction, setPrediction] = useState('');
@@ -197,7 +206,7 @@ const Prediction = () => {
   };
 
   return (
-    <div className="page-content">
+    <div className="page-content" style={{ position: 'relative' }}>
       <header className="page-header">
         <h1 className="page-title">Stock Prediction</h1>
         <p className="page-subtitle">Live Financial Forecasting</p>
@@ -215,8 +224,24 @@ const Prediction = () => {
               placeholder="Enter stock ticker (e.g., AAPL, MSFT)"
               className="ticker-input"
             />
-            <button onClick={handleFetch} className="fetch-button" disabled={isLoading}>
-              {isLoading ? 'Loading...' : 'Fetch Prediction'}
+            <button
+              onClick={handleFetch}
+              disabled={isLoading}
+              style={{
+                background: isLoading ? '#cccccc' : 'linear-gradient(to right, #e53935, #ff5722)', 
+                color: 'white',
+                padding: '12px 24px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: isLoading ? 'not-allowed' : 'pointer',
+                boxShadow: '0px 4px 12px rgba(0,0,0,0.1)',
+                letterSpacing: '1px',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              {isLoading ? 'Loading...' : 'FETCH PREDICTION'}
             </button>
           </div>
 
@@ -225,11 +250,6 @@ const Prediction = () => {
             <div className="error-message">
               {error}
             </div>
-          )}
-
-          {/* Loading Spinner */}
-          {isLoading && (
-            <div className="loading-message">Loading data...</div>
           )}
 
           {/* Chart and Prediction Display */}
@@ -246,9 +266,17 @@ const Prediction = () => {
               </div>
             </>
           )}
-
         </div>
       </div>
+
+      {/* Loading Modal */}
+      {isLoading && <div style={{display:'flex',alignItems:'center',justifyContent:'center'}}><ScaleLoader
+            color="red"
+            loading={true}
+            size={150}
+            aria-label="Loading Spinner"
+            data-testid="loader"
+          /></div>}
     </div>
   );
 };
