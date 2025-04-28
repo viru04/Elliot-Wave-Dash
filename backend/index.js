@@ -1,52 +1,47 @@
 const express = require('express');
-const { spawn } = require('child_process');
+const axios = require('axios');
 const cors = require('cors');
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.post('/predict', (req, res) => {
+app.post('/predict', async (req, res) => {
   const { ticker } = req.body;
-  
-  const python = spawn('python', ['elliot_predictor.py', ticker]);
+  try {
+    // Send POST request to Flask (or FastAPI) server
+    const response = await axios.post('http://localhost:5000/predict', { ticker })
+    const data = response.data;
 
-  let output = '';
-  let errorOutput = '';
-
-  python.stdout.on('data', (data) => {
-    output += data.toString();
-  });
-
-  python.stderr.on('data', (data) => {
-    errorOutput += data.toString();
-    console.error(`Python error: ${data}`);
-  });
-
-  python.on('close', (code) => {
-    if (code !== 0) {
-      console.error(`Python process exited with code ${code}`);
-      return res.status(500).json({ error: 'Python script failed', details: errorOutput });
+    if (data.price_chart && data.rsi_chart && data.prediction) {
+      res.json({
+        price_chart: data.price_chart,
+        rsi_chart: data.rsi_chart,
+        prediction: data.prediction
+      });
+    } else {
+      res.status(500).json({ error: 'Invalid data received from backend service' });
     }
-    try {
-      const parsed = JSON.parse(output);
-
-      if (parsed.price_chart && parsed.rsi_chart && parsed.prediction) {
-        res.json({
-          price_chart: parsed.price_chart,
-          rsi_chart: parsed.rsi_chart,
-          prediction: parsed.prediction
-        });
-      } else {
-        res.status(500).json({ error: 'Invalid Python script output format' });
-      }
-      
-    } catch (error) {
-      console.error('JSON parse error:', error);
-      res.status(500).json({ error: 'Invalid JSON from Python' });
-    }
-  });
+  } catch (error) {
+    console.error('Backend communication error:', error.message);
+    res.status(500).json({
+      error: 'Failed to fetch prediction from Python backend',
+      details: error.response?.data || error.message
+    });
+  }
 });
+
+app.get('/news', async (req,res) => {
+  try {
+    const response = await axios.get(
+      `https://newsapi.org/v2/top-headlines?category=business&language=en&apiKey=b0229a4f70084622acc940a120e73464`
+    );
+    return res.json({news:response.data.articles})
+  }
+  catch (err) {
+    res.status(500).json(err)
+  }
+})
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

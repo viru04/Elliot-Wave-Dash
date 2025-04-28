@@ -3,6 +3,7 @@
 # Dependency folders
 /frontend/node_modules/
 /backend/node_modules/
+/backend/__pycache__/
 /.pnp/
 /.pnp.js
 
