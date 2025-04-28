@@ -181,7 +181,7 @@ const Prediction = () => {
     setError(null);
 
     try {
-      const response = await axios.post('https://elliot-wave-dash.onrender.com/predict', { ticker: ticker.toUpperCase() });
+      const response = await axios.post('https://elliot-wave-dash-1.onrender.com/predict', { ticker: ticker.toUpperCase() });
       const data = response.data;
 
       if (data.price_chart && data.rsi_chart && data.prediction) {
