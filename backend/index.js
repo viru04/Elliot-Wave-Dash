@@ -10,7 +10,7 @@ app.post('/predict', async (req, res) => {
   const { ticker } = req.body;
   try {
     // Send POST request to Flask (or FastAPI) server
-    const response = await axios.post('http://localhost:5000/predict', { ticker })
+    const response = await axios.post('https://elliot-wave-python-server.onrender.com/predict', { ticker })
     const data = response.data;
 
     if (data.price_chart && data.rsi_chart && data.prediction) {
