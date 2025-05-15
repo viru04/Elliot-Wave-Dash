@@ -268,6 +268,27 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
+.custom-datepicker {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  width: 180px;
+}
+
+.react-datepicker__day--selected {
+  background-color: #e53935 !important;
+  color: white !important;
+  border-radius: 50%;
+}
+
+.react-datepicker__header {
+  background-color: #ff5722;
+  color: white;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
 .ticker-input:focus {
   border-color: #ff4500;
   box-shadow: 0 0 15px rgba(255, 69, 0, 0.3);

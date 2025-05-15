@@ -1,18 +1,18 @@
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
+require('dotenv').config()
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
 app.post('/predict', async (req, res) => {
-  const { ticker } = req.body;
+  const { ticker, date } = req.body;
   try {
     // Send POST request to Flask (or FastAPI) server
-    const response = await axios.post('https://elliot-wave-python-server.onrender.com/predict', { ticker })
+    const response = await axios.post(`${process.env.MODEL_URL}/predict`, { ticker, date })
     const data = response.data;
-
     if (data.price_chart && data.rsi_chart && data.prediction) {
       res.json({
         price_chart: data.price_chart,
@@ -34,7 +34,7 @@ app.post('/predict', async (req, res) => {
 app.get('/news', async (req,res) => {
   try {
     const response = await axios.get(
-      `https://newsapi.org/v2/top-headlines?category=business&language=en&apiKey=b0229a4f70084622acc940a120e73464`
+      `${process.env.NEWS_API}`
     );
     return res.json({news:response.data.articles})
   }
