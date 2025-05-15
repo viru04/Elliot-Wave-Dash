@@ -2,7 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, NavLink } from 'react-router-dom';
 import Plot from 'react-plotly.js';
 import axios from 'axios';
-import {ScaleLoader} from 'react-spinners'
+import { ScaleLoader } from 'react-spinners'
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  CircularProgress,
+  Alert,
+  Stack,
+} from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs from 'dayjs';
 import './App.css';
 
 const Navbar = () => {
@@ -69,7 +80,7 @@ const Home = () => {
       try {
         setLoading(true)
         const response = await axios.get(
-          `https://elliot-wave-dash-1.onrender.com/news`
+          `${process.env.REACT_APP_BACKEND_URL}/news`
         );
         setNews(response.data.news);
         setLoading(false)
@@ -171,6 +182,7 @@ const Tickers = () => {
 
 const Prediction = () => {
   const [ticker, setTicker] = useState('');
+  const [selectedDate, setSelectedDate] = useState(null);
   const [prediction, setPrediction] = useState('');
   const [priceChart, setPriceChart] = useState('');
   const [rsiChart, setRsiChart] = useState('');
@@ -178,8 +190,8 @@ const Prediction = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleFetch = async () => {
-    if (!ticker.trim()) {
-      setError('Please enter a valid ticker symbol.');
+    if (!ticker.trim() || !selectedDate) {
+      setError('Please enter a valid ticker symbol and choose a date.');
       return;
     }
 
@@ -187,7 +199,13 @@ const Prediction = () => {
     setError(null);
 
     try {
-      const response = await axios.post('https://elliot-wave-dash-1.onrender.com/predict', { ticker: ticker.toUpperCase() });
+      const formattedDate = dayjs(selectedDate).format('YYYY-MM-DD');
+
+      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/predict`, {
+        ticker: ticker.toUpperCase(),
+        date: formattedDate,
+      });
+
       const data = response.data;
 
       if (data.price_chart && data.rsi_chart && data.prediction) {
@@ -206,77 +224,75 @@ const Prediction = () => {
   };
 
   return (
-    <div className="page-content" style={{ position: 'relative' }}>
-      <header className="page-header">
-        <h1 className="page-title">Stock Prediction</h1>
-        <p className="page-subtitle">Live Financial Forecasting</p>
-      </header>
+    <div style={{
+      padding: '24px',
+      height: '100%',
+      minHeight: '500px',
+      display: 'flex',
+      width:'100%'
+    }}>
+      <Box p={4}>
+      <Typography variant="h4" mb={2}>Stock Prediction</Typography>
+      <Typography variant="subtitle1" color="text.secondary" mb={4}>
+        Live Financial Forecasting
+      </Typography>
 
-      <div className="content-grid">
-        <div className="card prediction-card">
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" mb={4}>
+        <TextField
+          label="Ticker Symbol"
+          variant="outlined"
+          value={ticker}
+          onChange={(e) => setTicker(e.target.value.toUpperCase())}
+        />
+        <DatePicker
+          label="Select Date"
+          value={selectedDate}
+          onChange={(newValue) => setSelectedDate(newValue)}
+          maxDate={dayjs()}
+          renderInput={(params) => <TextField {...params} />}
+        />
+        <Button
+          variant="contained"
+          sx={{
+            background: 'linear-gradient(to right, #e53935, #ff5722)',
+            color: '#fff',
+            fontWeight: 'bold',
+            px: 3,
+            py: 1.5,
+            borderRadius: 2,
+            '&:hover': {
+              background: 'linear-gradient(to right, #d32f2f, #f4511e)',
+            },
+          }}
+          disabled={isLoading}
+          onClick={handleFetch}
+        >
+          {isLoading ? <CircularProgress size={24} sx={{ color: 'white' }} /> : 'FETCH PREDICTION'}
+        </Button>
+      </Stack>
 
-          {/* Input */}
-          <div className="input-group">
-            <input
-              type="text"
-              value={ticker}
-              onChange={(e) => setTicker(e.target.value.toUpperCase())}
-              placeholder="Enter stock ticker (e.g., AAPL, MSFT)"
-              className="ticker-input"
-            />
-            <button
-              onClick={handleFetch}
-              disabled={isLoading}
-              style={{
-                background: isLoading ? '#cccccc' : 'linear-gradient(to right, #e53935, #ff5722)', 
-                color: 'white',
-                padding: '12px 24px',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: isLoading ? 'not-allowed' : 'pointer',
-                boxShadow: '0px 4px 12px rgba(0,0,0,0.1)',
-                letterSpacing: '1px',
-                transition: 'all 0.3s ease'
-              }}
-            >
-              {isLoading ? 'Loading...' : 'FETCH PREDICTION'}
-            </button>
-          </div>
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-          {/* Error Handling */}
-          {error && (
-            <div className="error-message">
-              {error}
-            </div>
-          )}
+      {!isLoading && !error && priceChart && rsiChart && prediction && (
+        <Box>
+          <Box my={2}>
+            <img src={priceChart} alt="Price Chart" style={{ width: '100%', borderRadius: 8 }} />
+          </Box>
+          <Box my={2}>
+            <img src={rsiChart} alt="RSI Chart" style={{ width: '100%', borderRadius: 8 }} />
+          </Box>
+          <Typography variant="h6" mt={2}>
+            📈 Predicted Price Range: {prediction}
+          </Typography>
+        </Box>
+      )}
 
-          {/* Chart and Prediction Display */}
-          {!isLoading && !error && priceChart && rsiChart && prediction && (
-            <>
-              <div className="graph-container">
-                <img src={priceChart} alt="Stock Chart" style={{ maxWidth: '100%', borderRadius: '8px', marginTop: '20px' }} />
-              </div>
-              <div className="graph-container">
-                <img src={rsiChart} alt="RSI Chart" style={{ maxWidth: '100%', borderRadius: '8px', marginTop: '20px' }} />
-              </div>
-              <div className="prediction-text" style={{ marginTop: '20px', fontSize: '1.2rem', fontWeight: '600' }}>
-                📈 Predicted Price Range: {prediction}
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Loading Modal */}
-      {isLoading && <div style={{display:'flex',alignItems:'center',justifyContent:'center'}}><ScaleLoader
-            color="red"
-            loading={true}
-            size={150}
-            aria-label="Loading Spinner"
-            data-testid="loader"
-          /></div>}
+      {isLoading && (
+        <Box display="flex" justifyContent="center" mt={4}>
+          <CircularProgress color="error" />
+        </Box>
+        )}
+        </Box>
     </div>
   );
 };

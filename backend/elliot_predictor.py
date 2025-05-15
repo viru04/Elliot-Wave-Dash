@@ -3,6 +3,7 @@ import json
 import io
 import base64
 import warnings
+from datetime import datetime, timedelta
 import yfinance as yf
 import pandas as pd
 import matplotlib
@@ -12,9 +13,14 @@ import matplotlib.pyplot as plt
 # --- Suppress warnings ---
 warnings.filterwarnings('ignore')
 
-def fetch_stock_data(ticker):
+# --- Fetch data from (end_date - 365 days) to end_date ---
+def fetch_stock_data(ticker, end_date_str):
+    end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
+    start_date = end_date - timedelta(days=365)
+    
     stock = yf.Ticker(ticker)
-    data = stock.history(period="1y")
+    data = stock.history(start=start_date.strftime("%Y-%m-%d"),
+                         end=end_date.strftime("%Y-%m-%d"))
     return data
 
 def calculate_rsi(data, period=14):
@@ -119,11 +125,11 @@ def plot_rsi_chart(data, ticker, start_date):
 
 def load_model():
     class Model:
-        def predict(self, ticker):
+        def predict(self, ticker, date):
             try:
-                data = fetch_stock_data(ticker)
+                data = fetch_stock_data(ticker, date)
                 if data.empty:
-                    raise ValueError(f"No data found for ticker {ticker}")
+                    raise ValueError(f"No data found for ticker {ticker} in the given range.")
 
                 data = calculate_rsi(data)
                 lowest_rsi_date = find_lowest_rsi(data)

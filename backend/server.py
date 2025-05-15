@@ -11,7 +11,8 @@ model =elliot_predictor.load_model()
 def predict():
     data = request.get_json()
     ticker = data['ticker']
-    result = model.predict(ticker)
+    date = data['date']
+    result = model.predict(ticker,date)
     return jsonify(result)
 
 if __name__ == '__main__':
